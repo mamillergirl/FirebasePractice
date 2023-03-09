@@ -1,78 +1,128 @@
 import { StyleSheet, Text, TextInput, KeyboardAvoidingView, View, TouchableOpacity } from 'react-native'
 import React, {useState, useEffect} from 'react'
 import {db} from '../firebase'
-import { collection, getDocs } from "firebase/firestore"; 
-import { getAuth} from "firebase/auth";
+import { collection, getDocs, doc, deleteDoc } from "firebase/firestore"; 
+import { getAuth, getUser} from "firebase/auth";
 import { useNavigation } from '@react-navigation/native';
 
 
-const AddRideScreen = () => {
-    const auth = getAuth();
-    const [rides, setRides] = useState([])
+const DisplayRideScreen = () => {
+    
+    const  [rides, setRides] = useState([])
+    const [documentId, setDocumentId] = useState([])
     const navigation = useNavigation()
+    const auth = getAuth()
 
-    const addItemToArray = (doc) => {
-        const rideArray = [...rides, doc];
-
-        setRides(rideArray);
-      }
+    // const getUserEmail = () => {
+        
+        
+    // }
+   
     const getRides = async() => {
         const querySnapshot = await getDocs(collection(db, "rides"));
-        querySnapshot.forEach((doc) => {
-           
-            addItemToArray(doc)
+        const documents = querySnapshot.forEach((doc) => {
+            documents.push({
+              id: doc.id,
+              ...doc.data(),
+            });
         });
-       
-    
-       
+        // setDocs(documents);
+        // querySnapshot.forEach((doc) => {
+           
+        //     console.log(`${doc.id} => ${doc.data().startingPoint}`);
+        //     setRides([...rides, doc.data()]);
+        
+        // });
+        setRides(documents);
+
     }
-    useEffect(() =>{
-        getRides()
+    const unsubscribe = getDocs(collection(db, "rides"))
+          .then((querySnapshot) => {
+            const documents = [];
+            querySnapshot.forEach((doc) => {
+              documents.push({
+                id: doc.id,
+                ...doc.data(),
+              });
+            });
+            setRides(documents);
+          })
+          .catch((error) => {
+            console.log('Error getting documents: ', error);
+          });
+    useEffect(() => {
+        
+        return () => unsubscribe();
+      }, []);
+    
+      
+      const handleDeleteData = async (key) => {
+          setDocumentId(key)
+          const documentRef = doc(db, 'rides', documentId);
+      
+          await deleteDoc(documentRef);
           
-    }, [])
+        }
+      
+  
+          
+  
    
 
   return (
     <KeyboardAvoidingView
     style={styles.container}
     behavior="padding">
-        <View style={styles.inputContainer}>
+        <View style={styles.rideContainer}>
         <View>
-      {rides.map((ride) => (
-        <Text key={ride.id} >{ride.data().startingPoint}</Text>
-      ))}
-    </View>
+            {rides.map((doc) => (
+             <View style={styles.rideBox} key={doc.id}>
+            <View >
+                <Text style={styles.title}>Route</Text>
+                <Text>{doc.startingPoint} - {doc.destination}</Text>
+                </View>
+            <View >
+                <Text style={styles.title}>Time</Text>
+                <Text>{doc.time}</Text>
+                </View>
+                <TouchableOpacity
+              onPress={() => handleDeleteData(doc.id)}
+               >
+                 <Text style={[styles.button, styles.buttonText]}>Delete Ride</Text>
+                </TouchableOpacity>
+            </View>
+          ))}
+        </View>
         <TouchableOpacity
-            style ={styles.button}
-            onPress = {() => {rides.forEach((ride) => {
-                console.log(`${ride.id} => ${ride.data().startingPoint}`);
-              });}} 
-            >
-            <Text style={[styles.button, styles.buttonText]}>Submit Ride</Text>
-        </TouchableOpacity>
+        style ={styles.button}
+        onPress={() => {navigation.replace("Home");}}
+        >
+          <Text style={[styles.button, styles.buttonText]}>Back to home</Text>
+      </TouchableOpacity>
         </View>
     </KeyboardAvoidingView>
   )
 }
 
-export default AddRideScreen
+export default DisplayRideScreen
 
 const styles = StyleSheet.create({
     container : {
         flex: 1,
-        justifyContent: 'center',
         alignItems: 'center',
+        padding: 10,
     }, 
-    inputContainer : {
-        width: '80%',
-
-    }, 
+    
     input: {
         backgroundColor: 'white',
         paddingHorizontal: 15,
         paddingVertical: 15,
         borderRadius: 10,
         marginTop: 5,
+
+    }, 
+    rideContainer : {
+        width: '90%',
 
     },
     buttonContainer: {
@@ -106,6 +156,29 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#0782F9',
 
+    },
+    rideBox : {
+    width: '95%',
+    height: '25%',
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 5,
+    borderColor: 'blue',
+    borderStyle: 'solid', 
+    shadowColor: 'black', 
+    shadowOffset: { width: 0, height: 2 , shadowOpacity: 0.8, elevation: 2 },
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    margin: 5,
+    
+    },
+    title: {
+        fontSize: 15,
+        fontWeight: 'bold',
     }
+    
+
+
     
 })

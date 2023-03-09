@@ -1,37 +1,36 @@
 import { StyleSheet, Text, TextInput, KeyboardAvoidingView, View, TouchableOpacity } from 'react-native'
 import React, {useState, useEffect} from 'react'
 import {db} from '../firebase'
-import { collection, addDoc } from "firebase/firestore"; 
+import { doc,  updateDoc } from "firebase/firestore"; 
 import { getAuth} from "firebase/auth";
 import { useNavigation } from '@react-navigation/native';
 
 
-const AddRideScreen = () => {
+const UpdateRideScreen = ({ route }) => {
+    const { documentId } = route.params;
+    const {docRef, setDocRef} = useState('')
     const auth = getAuth();
     const [startingPoint, setStartingPoint] = useState('')
     const [destination, setDestination] = useState('')
     const [time, setTime] = useState('')
     const navigation = useNavigation()
     
+    
    
-    const handleAddRide = async () => {
-        const user = auth.currentUser?.uid
-        const docRef = await addDoc(collection(db, "rides"), {
-            startingPoint,
-            destination,
-            time,
-            user
-          });
-        navigation.replace("Home")
+    const handleUpdateData = async () => {
         
-            }
+        const documentRef = doc(db, 'rides', documentId);
+       
+        await updateDoc(documentRef, { time });
+        
+      }
   return (
     <KeyboardAvoidingView
     style={styles.container}
     behavior="padding">
         <View style={styles.inputContainer}>
             <TextInput 
-            placeholder='Starting Point' 
+            placeholder='' 
             //value={ }
             onChangeText = {text => setStartingPoint(text)}
             style = {styles.input}
@@ -55,9 +54,10 @@ const AddRideScreen = () => {
         style = {styles.buttonContainer}>
             <TouchableOpacity
             style ={styles.button}
-            onPress = {handleAddRide} 
+    
+            onPress = {() => handleUpdateData()}
             >
-                <Text style={[styles.button, styles.buttonText]}>Submit Ride</Text>
+                <Text style={[styles.button, styles.buttonText]}>Update Ride</Text>
             </TouchableOpacity>
             <TouchableOpacity
         style ={styles.button}
@@ -71,7 +71,7 @@ const AddRideScreen = () => {
   )
 }
 
-export default AddRideScreen
+export default UpdateRideScreen
 
 const styles = StyleSheet.create({
     container : {

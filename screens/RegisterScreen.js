@@ -1,14 +1,19 @@
 import { StyleSheet, Text, TextInput, KeyboardAvoidingView, View, TouchableOpacity } from 'react-native'
 import React, {useState, useEffect} from 'react'
 import {db} from '../firebase'
-//import { collection, addDoc } from "firebase/firestore"; 
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged} from "firebase/auth";
+import { collection, addDoc } from "firebase/firestore"; 
+import { getAuth, createUserWithEmailAndPassword,  onAuthStateChanged} from "firebase/auth";
 import { useNavigation } from '@react-navigation/native';
 
 
-const LoginScreen = () => {
+const RegisterScreen = () => {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const [firstName, setFirstName] = useState('')
+    const [lastName, setLastName] = useState('')
+    const [phone, setPhone] = useState('')
+   
+
     const navigation = useNavigation()
     useEffect(() =>{
         const auth = getAuth();
@@ -21,31 +26,21 @@ const LoginScreen = () => {
         return unSubscribe
 
     }, [])
-    const handleLogIn = async () => {
-        const auth = getAuth();
-        signInWithEmailAndPassword(auth, email, password)
-          .then((userCredential) => {
-            // Signed in 
-            const user = userCredential.user;
-            // ...
-          })
-          .catch((error) => {
-            const errorCode = error.code;
-            const errorMessage = error.message;
-          });
-    }
+    
     const handleSignUp = async () => {
     
-        // const docRef = await addDoc(collection(db, "users"), {
-        //     email,
-        //     password
-        //   });
-        // console.log(docRef)
+        
         const auth = getAuth();
+        const docRef = await addDoc(collection(db, "users"), {
+            firstName,
+            lastName,
+            phone
+          });
         createUserWithEmailAndPassword(auth, email, password)
           .then((userCredential) => {
             // Signed in 
             const user = userCredential.user;
+            
             // ...
           })
           .catch((error) => {
@@ -53,12 +48,33 @@ const LoginScreen = () => {
             const errorMessage = error.message;
             // ..
           });
+        
+        
+        
             }
   return (
     <KeyboardAvoidingView
     style={styles.container}
     behavior="padding">
         <View style={styles.inputContainer}>
+            <TextInput 
+            placeholder='First Name' 
+            //value={ }
+            onChangeText = {text => setFirstName(text)}
+            style = {styles.input}
+            />
+            <TextInput 
+            placeholder='Last Name' 
+            //value={ }
+            onChangeText = {text => setLastName(text)}
+            style = {styles.input}
+            />
+            <TextInput 
+            placeholder='Phone Number' 
+            //value={ }
+            onChangeText = {text => setPhone(text)}
+            style = {styles.input}
+            />
             <TextInput 
             placeholder='Email' 
             //value={ }
@@ -73,16 +89,11 @@ const LoginScreen = () => {
             secureTextEntry
             />
             
+            
         </View>
-        <View
-        style = {styles.buttonContainer}>
+        <View>
             <TouchableOpacity
-            style ={styles.button}
-            onPress = {handleLogIn}>
-                <Text style={[styles.button, styles.buttonText]}>Login</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-            onPress={() => {navigation.replace("Register");}}
+            onPress = {handleSignUp}
             style ={[styles.button, styles.buttonOutline]}>
                 <Text style={[styles.button, styles.buttonOutlineText]}>Register</Text>
             </TouchableOpacity>
@@ -92,7 +103,7 @@ const LoginScreen = () => {
   )
 }
 
-export default LoginScreen
+export default RegisterScreen
 
 const styles = StyleSheet.create({
     container : {

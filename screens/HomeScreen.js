@@ -30,12 +30,12 @@ const HomeScreen = () => {
         >
           <Text style={[styles.button, styles.buttonText]}>Add Ride</Text>
       </TouchableOpacity>
-      {/* <TouchableOpacity
+      <TouchableOpacity
         style ={styles.button}
         onPress={() => {navigation.replace("DisplayRide");}}
         >
           <Text style={[styles.button, styles.buttonText]}>View Rides</Text>
-      </TouchableOpacity> */}
+      </TouchableOpacity>
                 
     </View>
   )
@@ -60,6 +60,7 @@ const styles = StyleSheet.create({
       backgroundColor: '#0702F9',
       width: '50%',
       padding: 5,
+      margin: 5,
       borderRadius: 10,
       alignItems: 'center',
       justifyContent: 'center',
